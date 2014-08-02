@@ -12,7 +12,4 @@ while [ $continue -eq "0" ]; do
 done
 
 . build/envsetup.sh
-add_lunch_combo "liquid_$device-userdebug"
-lunch "liquid_$device-userdebug"
-make dirty
-time mka liquid | tee build.log
+brunch "$device"
