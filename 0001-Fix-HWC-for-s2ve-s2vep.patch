@@ -1,0 +1,30 @@
+From bdf44f5d3b519069188453a0508985bbb0345e8b Mon Sep 17 00:00:00 2001
+From: LuK <priv.luk@gmail.com>
+Date: Sun, 22 Jun 2014 20:43:08 +0200
+Subject: [PATCH] Fix HWC for s2ve/s2vep
+
+---
+ android_webview/browser/in_process_view_renderer.cc | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/android_webview/browser/in_process_view_renderer.cc b/android_webview/browser/in_process_view_renderer.cc
+index bcfa3b9..0978e09 100644
+--- a/android_webview/browser/in_process_view_renderer.cc
++++ b/android_webview/browser/in_process_view_renderer.cc
+@@ -128,8 +128,13 @@ class ScopedPixelAccess {
+ };
+ 
+ bool HardwareEnabled() {
++// HACK: CAPRI_HWC has problems with GL image upload which can lead to system crash
++#ifdef CAPRI_HWC
++  static bool g_hw_enabled = false;
++#else
+   static bool g_hw_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
+       switches::kDisableWebViewGLMode);
++#endif
+   return g_hw_enabled;
+ }
+ 
+-- 
+1.9.1
+

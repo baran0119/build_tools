@@ -1,18 +1,16 @@
-From 9ea34a45b82771a564ba9549752d152fbd529acf Mon Sep 17 00:00:00 2001
-From: Pawit Pornkitprasan <p.pawit@gmail.com>
-Date: Tue, 10 Dec 2013 20:09:12 +0700
-Subject: [PATCH] libbt: switch to N_BRCM_HCI line disclipline for userial
- ioctl
+From 0baf49afdc4cd28a1c6cb029df0cbc077e8a3a36 Mon Sep 17 00:00:00 2001
+From: LuK <priv.luk@gmail.com>
+Date: Sun, 22 Jun 2014 20:40:29 +0200
+Subject: [PATCH] Add BT support for s2ve/s2vep
 
-Change-Id: I12c297c6b26fc0cb6f0a36ed8f5d04d4d36a4092
 ---
  src/userial_vendor.c | 11 +++++++++++
  1 file changed, 11 insertions(+)
 
-diff --git a/src/userial_vendor.c hardware/broadcom/libbt/src/userial_vendor.c
+diff --git a/src/userial_vendor.c b/src/userial_vendor.c
 index 5233d19..86d98e8 100755
---- hardware/broadcom/libbt/src/userial_vendor.c
-+++ hardware/broadcom/libbt/src/userial_vendor.c
+--- a/src/userial_vendor.c
++++ b/src/userial_vendor.c
 @@ -183,6 +183,10 @@ int userial_vendor_open(tUSERIAL_CFG *p_cfg)
      uint16_t parity;
      uint8_t stop_bits;
@@ -39,4 +37,5 @@ index 5233d19..86d98e8 100755
  #endif
  
 -- 
-1.8.3.4 (Apple Git-47)
+1.9.1
+

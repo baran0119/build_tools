@@ -1,14 +1,19 @@
-From cabf0d36d236cb9965425fb03e9ac949ae564f92 Mon Sep 17 00:00:00 2001
-From: "dimimeim@gmail.com" <dimimeim@gmail.com>
-Date: Mon, 10 Mar 2014 22:45:17 +0200
-Subject: [PATCH] leds patch
+From c83358053edd8592966c8a716e4fd036c13ac829 Mon Sep 17 00:00:00 2001
+From: LuK1337 <priv.luk@gmail.com>
+Date: Thu, 23 Oct 2014 21:28:05 +0200
+Subject: [PATCH] Led patch for s2ve/s2vep
 
+Change-Id: I169cb4ca6e2ee25a065be422b03c5b4d4b22b091
 ---
+ .../com/android/server/input/InputManagerService.java  |  5 +++++
+ .../com/android/server/power/PowerManagerService.java  | 18 ++++++++++++------
+ 2 files changed, 17 insertions(+), 6 deletions(-)
+
 diff --git a/services/java/com/android/server/input/InputManagerService.java b/services/java/com/android/server/input/InputManagerService.java
-index d2d312c..d31abd8 100644
+index b8a78cd..f581091 100644
 --- a/services/java/com/android/server/input/InputManagerService.java
-+++ frameworks/base/services/java/com/android/server/input/InputManagerService.java
-@@ -90,6 +90,8 @@
++++ b/services/java/com/android/server/input/InputManagerService.java
+@@ -90,6 +90,8 @@ import java.util.HashSet;
  import libcore.io.Streams;
  import libcore.util.Objects;
  
@@ -17,7 +22,7 @@ index d2d312c..d31abd8 100644
  /*
   * Wraps the C++ InputManager and provides its callbacks.
   */
-@@ -1421,6 +1423,9 @@ final boolean filterInputEvent(InputEvent event, int policyFlags) {
+@@ -1401,6 +1403,9 @@ public class InputManagerService extends IInputManager.Stub
  
      // Native callback.
      private int interceptKeyBeforeQueueing(KeyEvent event, int policyFlags, boolean isScreenOn) {
@@ -28,10 +33,10 @@ index d2d312c..d31abd8 100644
                  event, policyFlags, isScreenOn);
      }
 diff --git a/services/java/com/android/server/power/PowerManagerService.java b/services/java/com/android/server/power/PowerManagerService.java
-index c1a9849..e578b22 100644
+index a134341..b930110 100644
 --- a/services/java/com/android/server/power/PowerManagerService.java
-+++ frameworks/base/services/java/com/android/server/power/PowerManagerService.java
-@@ -77,6 +77,8 @@
++++ b/services/java/com/android/server/power/PowerManagerService.java
+@@ -81,6 +81,8 @@ import libcore.util.Objects;
  public final class PowerManagerService extends IPowerManager.Stub
          implements Watchdog.Monitor {
      private static final String TAG = "PowerManagerService";
@@ -40,7 +45,7 @@ index c1a9849..e578b22 100644
  
      private static final boolean DEBUG = false;
      private static final boolean DEBUG_SPEW = DEBUG && true;
-@@ -189,13 +191,13 @@
+@@ -196,13 +198,13 @@ public final class PowerManagerService extends IPowerManager.Stub
      private DreamManagerService mDreamManager;
      private AutoBrightnessHandler mAutoBrightnessHandler;
      private LightsService.Light mAttentionLight;
@@ -57,7 +62,7 @@ index c1a9849..e578b22 100644
      private int mButtonBrightnessSettingDefault;
      private int mKeyboardBrightness;
      private int mKeyboardBrightnessSettingDefault;
-@@ -1561,7 +1563,7 @@ private void updateUserActivitySummaryLocked(long now, int dirty) {
+@@ -1707,7 +1709,7 @@ public final class PowerManagerService extends IPowerManager.Stub
                      nextTimeout = mLastUserActivityTime
                              + screenOffTimeout - screenDimDuration;
                      if (now < nextTimeout) {
@@ -66,7 +71,7 @@ index c1a9849..e578b22 100644
                          if (mButtonBrightnessOverrideFromWindowManager >= 0) {
                              buttonBrightness = mButtonBrightnessOverrideFromWindowManager;
                              keyboardBrightness = mButtonBrightnessOverrideFromWindowManager;
-@@ -1574,7 +1576,7 @@ private void updateUserActivitySummaryLocked(long now, int dirty) {
+@@ -1720,7 +1722,7 @@ public final class PowerManagerService extends IPowerManager.Stub
                          if (mButtonTimeout != 0 && now > mLastUserActivityTime + mButtonTimeout) {
                              mButtonsLight.setBrightness(0);
                          } else {
@@ -75,7 +80,7 @@ index c1a9849..e578b22 100644
                              if (buttonBrightness != 0 && mButtonTimeout != 0) {
                                  nextTimeout = now + mButtonTimeout;
                              }
-@@ -1617,7 +1619,11 @@ private void updateUserActivitySummaryLocked(long now, int dirty) {
+@@ -1763,7 +1765,11 @@ public final class PowerManagerService extends IPowerManager.Stub
              }
          }
      }
@@ -89,5 +94,5 @@ index c1a9849..e578b22 100644
       * Called when a user activity timeout has occurred.
       * Simply indicates that something about user activity has changed so that the new
 -- 
-1.8.5.5
+2.1.1
 

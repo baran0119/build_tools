@@ -1,0 +1,37 @@
+From 3882a3a62ebd9b2c68765d28b2b81d75e2d70b54 Mon Sep 17 00:00:00 2001
+From: LuK1337 <priv.luk@gmail.com>
+Date: Thu, 23 Oct 2014 21:00:30 +0200
+Subject: [PATCH] FRAMEWORKS AV PATCH for s2ve/s2vep device
+
+Change-Id: Ic2c5a13356df486774679a7f85ab3e31057750f3
+---
+ media/libstagefright/OMXCodec.cpp | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/media/libstagefright/OMXCodec.cpp b/media/libstagefright/OMXCodec.cpp
+index 71f6f8d..a3dddca 100644
+--- a/media/libstagefright/OMXCodec.cpp
++++ b/media/libstagefright/OMXCodec.cpp
+@@ -949,7 +949,18 @@ status_t OMXCodec::configureCodec(const sp<MetaData> &meta) {
+     if (meta->findInt32(kKeyMaxInputSize, &maxInputSize)) {
+         setMinBufferSize(kPortIndexInput, (OMX_U32)maxInputSize);
+     }
+-
++// Capri's OMX fail to set a reasonable default size from width and height
++#ifdef CAPRI_HWC
++    else if (!strncmp(mComponentName, "OMX.BRCM.vc4.decoder.", 21)) {
++        int32_t width;
++        int32_t height;
++        if (meta->findInt32(kKeyWidth, &width) && meta->findInt32(kKeyHeight, &height)) {
++            setMinBufferSize(kPortIndexInput, (width * height * 3) / 2);
++        } else {
++            ALOGE("Failed to set min buffer size");
++        }
++    }
++#endif
+     initOutputFormat(meta);
+ 
+     if ((mFlags & kClientNeedsFramebuffer)
+-- 
+2.1.1
+
