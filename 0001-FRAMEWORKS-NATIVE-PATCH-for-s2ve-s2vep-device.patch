@@ -126,7 +126,7 @@ index d26d3af..91acecb 100644
      ATRACE_CALL();
  
 +// Rotation artifact problems when useReadPixels is false
-+#ifdef CAPRI_HWC
++#if defined(CAPRI_HWC) || defined(JAVA_HWC)
 +    useReadPixels = true;
 +#endif
 +

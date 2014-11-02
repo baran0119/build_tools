@@ -16,7 +16,7 @@ index bcfa3b9..0978e09 100644
  
  bool HardwareEnabled() {
 +// HACK: CAPRI_HWC has problems with GL image upload which can lead to system crash
-+#ifdef CAPRI_HWC
++#if defined(CAPRI_HWC) || defined(JAVA_HWC)
 +  static bool g_hw_enabled = false;
 +#else
    static bool g_hw_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
