@@ -1,0 +1,124 @@
+From 26d6fe72ee56c5b3e214668e472efb92e9e825e1 Mon Sep 17 00:00:00 2001
+From: Pawit Pornkitprasan <p.pawit@gmail.com>
+Date: Sat, 8 Mar 2014 19:35:17 +0700
+Subject: [PATCH 1/3] RIL: mark mInstanceId as protected
+
+To use in RIL subclasses
+
+Change-Id: I4ab1ea79079e3b03670b1e985f7a574df1f16658
+---
+ src/java/com/android/internal/telephony/RIL.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/java/com/android/internal/telephony/RIL.java b/src/java/com/android/internal/telephony/RIL.java
+index 61268b1..af582be 100644
+--- a/src/java/com/android/internal/telephony/RIL.java
++++ b/src/java/com/android/internal/telephony/RIL.java
+@@ -280,7 +280,7 @@ public class RIL extends BaseCommands implements CommandsInterface {
+     // When we are testing emergency calls
+     AtomicBoolean mTestingEmergencyCall = new AtomicBoolean(false);
+ 
+-    private Integer mInstanceId;
++    protected Integer mInstanceId;
+ 
+     // Number of per-network elements expected in QUERY_AVAILABLE_NETWORKS's response.
+     // 4 elements is default, but many RILs actually return 5, making it impossible to
+-- 
+1.9.3 (Apple Git-50)
+
+
+From 44c9cd2d5818c0bd0bbf1b20b15a7e9198b8358d Mon Sep 17 00:00:00 2001
+From: Pawit Pornkitprasan <p.pawit@gmail.com>
+Date: Sat, 31 May 2014 12:34:56 +0700
+Subject: [PATCH 2/3] telephony: support for RIL that does not send
+ UNSOL_CALL_RING
+
+Samsung Broadcom RIL does not send UNSOL_CALL_RING at all, so it
+needs to be faked or non loop (e.g. Digital Phone) ringtones
+won't work.
+
+Change-Id: Ib7373d32777f6c42ee488972a7aa63ae8e1cd09b
+---
+ .../com/android/internal/telephony/PhoneBase.java     | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/src/java/com/android/internal/telephony/PhoneBase.java b/src/java/com/android/internal/telephony/PhoneBase.java
+index a021997..67053bd 100644
+--- a/src/java/com/android/internal/telephony/PhoneBase.java
++++ b/src/java/com/android/internal/telephony/PhoneBase.java
+@@ -201,6 +201,7 @@ public abstract class PhoneBase extends Handler implements Phone {
+     boolean mDnsCheckDisabled;
+     public DcTrackerBase mDcTracker;
+     boolean mDoesRilSendMultipleCallRing;
++    boolean mDoesRilSendCallRing;
+     int mCallRingContinueToken;
+     int mCallRingDelay;
+     public boolean mIsTheCurrentActivePhone = true;
+@@ -413,6 +414,11 @@ public abstract class PhoneBase extends Handler implements Phone {
+                 TelephonyProperties.PROPERTY_RIL_SENDS_MULTIPLE_CALL_RING, true);
+         Rlog.d(LOG_TAG, "mDoesRilSendMultipleCallRing=" + mDoesRilSendMultipleCallRing);
+ 
++        // Some RIL do not even send a single RIL_UNSOL_CALL_RING
++        mDoesRilSendCallRing = SystemProperties.getBoolean(
++                "ro.telephony.call_ring", true);
++        Rlog.d(LOG_TAG, "mDoesRilSendCallRing=" + mDoesRilSendCallRing);
++
+         mCallRingDelay = SystemProperties.getInt(
+                 TelephonyProperties.PROPERTY_CALL_RING_DELAY, 3000);
+         Rlog.d(LOG_TAG, "mCallRingDelay=" + mCallRingDelay);
+@@ -1725,6 +1731,18 @@ public abstract class PhoneBase extends Handler implements Phone {
+     public void notifyNewRingingConnectionP(Connection cn) {
+         if (!mIsVoiceCapable)
+             return;
++
++        // Fake RIL_UNSOL_CALL_RING if the RIL doesn't send it.
++        // Note that we need the delay to prevent the request from
++        // being sent after CallTracker detects "RINGING" state, but
++        // before the correct contact-specific ringtone is queried.
++        // Otherwise, the incorrect ringtone will be used
++        if (!mDoesRilSendCallRing) {
++            int token = ++mCallRingContinueToken;
++            sendMessageDelayed(
++                    obtainMessage(EVENT_CALL_RING_CONTINUE, token, 0), mCallRingDelay);
++        }
++
+         AsyncResult ar = new AsyncResult(null, cn, null);
+         mNewRingingConnectionRegistrants.notifyRegistrants(ar);
+     }
+@@ -1968,6 +1986,7 @@ public abstract class PhoneBase extends Handler implements Phone {
+         pw.println(" mDnsCheckDisabled=" + mDnsCheckDisabled);
+         pw.println(" mDcTracker=" + mDcTracker);
+         pw.println(" mDoesRilSendMultipleCallRing=" + mDoesRilSendMultipleCallRing);
++        pw.println(" mDoesRilSendCallRing=" + mDoesRilSendCallRing);
+         pw.println(" mCallRingContinueToken=" + mCallRingContinueToken);
+         pw.println(" mCallRingDelay=" + mCallRingDelay);
+         pw.println(" mIsTheCurrentActivePhone=" + mIsTheCurrentActivePhone);
+-- 
+1.9.3 (Apple Git-50)
+
+
+From ac48190fb42240a9dcd752632d945cfc3f268bc6 Mon Sep 17 00:00:00 2001
+From: Pawit Pornkitprasan <p.pawit@gmail.com>
+Date: Sat, 15 Nov 2014 17:39:50 +0700
+Subject: [PATCH 3/3] telephony: RIL: i9082: set correct rild names
+
+Change-Id: Idf8e98ae2f36f30b84be04b7b062ca4b52cebd8a
+---
+ src/java/com/android/internal/telephony/RIL.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/java/com/android/internal/telephony/RIL.java b/src/java/com/android/internal/telephony/RIL.java
+index af582be..e64daf3 100644
+--- a/src/java/com/android/internal/telephony/RIL.java
++++ b/src/java/com/android/internal/telephony/RIL.java
+@@ -299,7 +299,7 @@ public class RIL extends BaseCommands implements CommandsInterface {
+     static final int RESPONSE_SOLICITED = 0;
+     static final int RESPONSE_UNSOLICITED = 1;
+ 
+-    static final String[] SOCKET_NAME_RIL = {"rild", "rild2", "rild3"};
++    static final String[] SOCKET_NAME_RIL = {"rild", "rild1", "rild2"};
+ 
+     static final int SOCKET_OPEN_RETRY_MILLIS = 4 * 1000;
+ 
+-- 
+1.9.3 (Apple Git-50)

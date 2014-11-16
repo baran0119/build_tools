@@ -1,12 +1,14 @@
 count=0
 curr_folder="$PWD"
 patches=(
-		'hardware/broadcom/libbt 0001-Add-BT-support-for-s2ve-s2vep.patch'
-		'external/chromium_org 0001-Fix-HWC-for-s2ve-s2vep.patch'
-		'frameworks/av 0001-FRAMEWORKS-AV-PATCH-for-s2ve-s2vep-device.patch'
-		'frameworks/native 0001-FRAMEWORKS-NATIVE-PATCH-for-s2ve-s2vep-device.patch'
-		'frameworks/base 0001-Led-patch-for-s2ve-s2vep.patch'
-		'packages/providers/MediaProvider 0001-PROVIDERS-MEDIA-MEDIAPROVIDER-PATCH-for-s2ve-s2vep-d.patch'
+                'frameworks/av frameworks_av.patch'
+                'frameworks/base frameworks_base.patch'
+                'frameworks/native frameworks_native.patch'
+                'frameworks/opt/net/wifi frameworks_opt_net_wifi.patch'
+                'frameworks/opt/telephony frameworks_opt_telephony.patch'
+                'hardware/broadcom/libbt hardware_broadcom_libbt.patch'
+                'hardware/libhardware_legacy hardware_libhardware_legacy.patch'
+                'system/core system_core.patch'
 	)
 
 while [ "x${patches[count]}" != "x" ]
