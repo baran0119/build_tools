@@ -1,80 +1,127 @@
-From d5690109ea34dbd09932a4a2ab9b55b40cbab315 Mon Sep 17 00:00:00 2001
-From: Ricardo Cerqueira <cyanogenmod@cerqueira.org>
-Date: Mon, 4 Nov 2013 02:54:13 +0000
-Subject: [PATCH 1/2] wifi: Set the mode at native layer
+From 0758dcff115773b55787934632c6a93e05b1ca42 Mon Sep 17 00:00:00 2001
+From: Pawit Pornkitprasan <p.pawit@gmail.com>
+Date: Sun, 29 Dec 2013 08:54:55 +0700
+Subject: [PATCH 1/2] WifiController: fix high perf lock sometimes not
+ respected
 
- * Set normal/AP mode so that the HAL can specify correct module
-   arguments when loading the driver.
+When the device screen is turned off, the state is DeviceActive for
+15 minutes. In this time, high perf lock is not respected and
+Wi-Fi power-saving mode will be turned on because screen is off.
 
-Change-Id: I6eee2cc53b5f1e70306e252e52c909833f220515
+Fix by adding a new DeviceActiveHighPerfState.
+
+Change-Id: I71074beec4d41286dea0861107d7931da205aca2
+JIRA: CYAN-2860
 ---
- service/java/com/android/server/wifi/WifiNative.java       | 2 ++
- service/java/com/android/server/wifi/WifiStateMachine.java | 2 ++
- service/jni/com_android_server_wifi_WifiNative.cpp         | 6 ++++++
- 3 files changed, 10 insertions(+)
+ .../com/android/server/wifi/WifiController.java    | 34 +++++++++++++++++++---
+ 1 file changed, 30 insertions(+), 4 deletions(-)
 
-diff --git a/service/java/com/android/server/wifi/WifiNative.java b/service/java/com/android/server/wifi/WifiNative.java
-index 0e01e27..7df166c 100644
---- a/service/java/com/android/server/wifi/WifiNative.java
-+++ b/service/java/com/android/server/wifi/WifiNative.java
-@@ -1127,6 +1127,8 @@ public class WifiNative {
-         return doBooleanCommand("ANQP_GET " + bssid + " " + subtypes);
+diff --git a/service/java/com/android/server/wifi/WifiController.java b/service/java/com/android/server/wifi/WifiController.java
+index 4b2152e..c244162 100644
+--- a/service/java/com/android/server/wifi/WifiController.java
++++ b/service/java/com/android/server/wifi/WifiController.java
+@@ -123,6 +123,7 @@ class WifiController extends StateMachine {
+     private StaDisabledWithScanState mStaDisabledWithScanState = new StaDisabledWithScanState();
+     private ApEnabledState mApEnabledState = new ApEnabledState();
+     private DeviceActiveState mDeviceActiveState = new DeviceActiveState();
++    private DeviceActiveHighPerfState mDeviceActiveHighPerfState = new DeviceActiveHighPerfState();
+     private DeviceInactiveState mDeviceInactiveState = new DeviceInactiveState();
+     private ScanOnlyLockHeldState mScanOnlyLockHeldState = new ScanOnlyLockHeldState();
+     private FullLockHeldState mFullLockHeldState = new FullLockHeldState();
+@@ -145,6 +146,7 @@ class WifiController extends StateMachine {
+             addState(mApStaDisabledState, mDefaultState);
+             addState(mStaEnabledState, mDefaultState);
+                 addState(mDeviceActiveState, mStaEnabledState);
++                    addState(mDeviceActiveHighPerfState, mDeviceActiveState);
+                 addState(mDeviceInactiveState, mStaEnabledState);
+                     addState(mScanOnlyLockHeldState, mDeviceInactiveState);
+                     addState(mFullLockHeldState, mDeviceInactiveState);
+@@ -416,7 +418,7 @@ class WifiController extends StateMachine {
+                             break;
+                         }
+                         if (mDeviceIdle == false) {
+-                            transitionTo(mDeviceActiveState);
++                            checkLocksAndTransitionWhenDeviceActive();
+                         } else {
+                             checkLocksAndTransitionWhenDeviceIdle();
+                         }
+@@ -545,7 +547,7 @@ class WifiController extends StateMachine {
+                             break;
+                         }
+                         if (mDeviceIdle == false) {
+-                            transitionTo(mDeviceActiveState);
++                            checkLocksAndTransitionWhenDeviceActive();
+                         } else {
+                             checkLocksAndTransitionWhenDeviceIdle();
+                         }
+@@ -635,7 +637,7 @@ class WifiController extends StateMachine {
+             if (msg.what == CMD_EMERGENCY_MODE_CHANGED && msg.arg1 == 0) {
+                 if (mSettingsStore.isWifiToggleEnabled()) {
+                     if (mDeviceIdle == false) {
+-                        transitionTo(mDeviceActiveState);
++                        checkLocksAndTransitionWhenDeviceActive();
+                     } else {
+                         checkLocksAndTransitionWhenDeviceIdle();
+                     }
+@@ -665,6 +667,9 @@ class WifiController extends StateMachine {
+             if (msg.what == CMD_DEVICE_IDLE) {
+                 checkLocksAndTransitionWhenDeviceIdle();
+                 // We let default state handle the rest of work
++            } else if (msg.what == CMD_LOCKS_CHANGED) {
++                checkLocksAndTransitionWhenDeviceActive();
++                return HANDLED;
+             } else if (msg.what == CMD_USER_PRESENT) {
+                 // TLS networks can't connect until user unlocks keystore. KeyStore
+                 // unlocks when the user punches PIN after the reboot. So use this
+@@ -679,6 +684,16 @@ class WifiController extends StateMachine {
+         }
      }
  
-+    public native static boolean setMode(int mode);
++    /* Parent: DeviceActiveState. Device is active, and an app is holding a high perf lock. */
++    class DeviceActiveHighPerfState extends State {
++        @Override
++        public void enter() {
++            mWifiStateMachine.setOperationalMode(WifiStateMachine.CONNECT_MODE);
++            mWifiStateMachine.setDriverStart(true);
++            mWifiStateMachine.setHighPerfModeEnabled(true);
++        }
++    }
 +
-     /* WIFI HAL support */
+     /* Parent: StaEnabledState */
+     class DeviceInactiveState extends State {
+         @Override
+@@ -689,7 +704,7 @@ class WifiController extends StateMachine {
+                     updateBatteryWorkSource();
+                     return HANDLED;
+                 case CMD_SCREEN_ON:
+-                    transitionTo(mDeviceActiveState);
++                    checkLocksAndTransitionWhenDeviceActive();
+                     // More work in default state
+                     return NOT_HANDLED;
+                 default:
+@@ -735,6 +750,17 @@ class WifiController extends StateMachine {
+         }
+     }
  
-     private static final String TAG = "WifiNative-HAL";
-diff --git a/service/java/com/android/server/wifi/WifiStateMachine.java b/service/java/com/android/server/wifi/WifiStateMachine.java
-index c91458a..b8b43fa 100644
---- a/service/java/com/android/server/wifi/WifiStateMachine.java
-+++ b/service/java/com/android/server/wifi/WifiStateMachine.java
-@@ -1873,6 +1873,7 @@ public class WifiStateMachine extends StateMachine {
-      */
-     public void setSupplicantRunning(boolean enable) {
-         if (enable) {
-+            WifiNative.setMode(0);
-             sendMessage(CMD_START_SUPPLICANT);
-         } else {
-             sendMessage(CMD_STOP_SUPPLICANT);
-@@ -1884,6 +1885,7 @@ public class WifiStateMachine extends StateMachine {
-      */
-     public void setHostApRunning(WifiConfiguration wifiConfig, boolean enable) {
-         if (enable) {
-+            WifiNative.setMode(1);
-             sendMessage(CMD_START_AP, wifiConfig);
-         } else {
-             sendMessage(CMD_STOP_AP);
-diff --git a/service/jni/com_android_server_wifi_WifiNative.cpp b/service/jni/com_android_server_wifi_WifiNative.cpp
-index 2bd4229..d90981b 100644
---- a/service/jni/com_android_server_wifi_WifiNative.cpp
-+++ b/service/jni/com_android_server_wifi_WifiNative.cpp
-@@ -85,6 +85,11 @@ static jstring doStringCommand(JNIEnv* env, jstring javaCommand) {
-     return env->NewStringUTF(reply);
- }
- 
-+static jboolean android_net_wifi_setMode(JNIEnv* env, jobject, jint type)
-+{
-+    return (jboolean)(::wifi_set_mode(type) == 0);
-+}
++    private void checkLocksAndTransitionWhenDeviceActive() {
++        if (mLocks.hasLocks() && mLocks.getStrongestLockMode() == WIFI_MODE_FULL_HIGH_PERF) {
++            // It is possible for the screen to be off while the device is
++            // is active (mIdleMillis), so we need the high-perf mode
++            // otherwise powersaving mode will be turned on.
++            transitionTo(mDeviceActiveHighPerfState);
++        } else {
++            transitionTo(mDeviceActiveState);
++        }
++    }
 +
- static jboolean android_net_wifi_isDriverLoaded(JNIEnv* env, jobject)
- {
-     return (::is_wifi_driver_loaded() == 1);
-@@ -1072,6 +1077,7 @@ static JNINativeMethod gWifiMethods[] = {
-     { "doIntCommandNative", "(Ljava/lang/String;)I", (void*)android_net_wifi_doIntCommand },
-     { "doStringCommandNative", "(Ljava/lang/String;)Ljava/lang/String;",
-             (void*) android_net_wifi_doStringCommand },
-+    { "setMode", "(I)Z", (void*) android_net_wifi_setMode},
-     { "startHalNative", "()Z", (void*) android_net_wifi_startHal },
-     { "stopHalNative", "()V", (void*) android_net_wifi_stopHal },
-     { "waitForHalEventNative", "()V", (void*) android_net_wifi_waitForHalEvents },
+     private void checkLocksAndTransitionWhenDeviceIdle() {
+         if (mLocks.hasLocks()) {
+             switch (mLocks.getStrongestLockMode()) {
 -- 
 1.9.3 (Apple Git-50)
 
 
-From 6ec05ef5277a8f57e3c22c1741ae7b24cc8acc27 Mon Sep 17 00:00:00 2001
+From 4dfdf277e423fca08cb60efee22fba115a39aca0 Mon Sep 17 00:00:00 2001
 From: Pawit Pornkitprasan <p.pawit@gmail.com>
 Date: Sun, 16 Nov 2014 14:35:29 +0700
 Subject: [PATCH 2/2] HACK: i9082: disable libwifi-hal-bcm
@@ -101,3 +148,4 @@ index 5ef6a44..33312fe 100644
  else ifeq ($(BOARD_WLAN_DEVICE), mrvl)
 -- 
 1.9.3 (Apple Git-50)
+
