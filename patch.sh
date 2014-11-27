@@ -10,6 +10,7 @@ patches=(
                 'packages/apps/Settings packages_apps_Settings.patch'
                 'packages/services/Telephony packages_services_Telephony.patch'
                 'system/core system_core.patch'
+		'external/icu external_icu.patch'
 	)
 
 while [ "x${patches[count]}" != "x" ]
