@@ -103,7 +103,7 @@ index 421a2ab..6c23a8e 100644
 1.9.3 (Apple Git-50)
 
 
-From b0b3fea1f6812d0ca6234dcabf10af773d97b369 Mon Sep 17 00:00:00 2001
+From 7e4d612779628855c5c9553a62d74ff121a46d66 Mon Sep 17 00:00:00 2001
 From: Pawit Pornkitprasan <p.pawit@gmail.com>
 Date: Sun, 23 Nov 2014 15:57:20 +0700
 Subject: [PATCH 3/3] Telephony: MSim: enable preferred mode button for all
@@ -113,66 +113,47 @@ HACK to allow changing network mode on multi-SIM
 
 Change-Id: I79cd6dfb1653c9c1ef14b8965c9af2bd0f5792cb
 ---
- res/values/strings.xml                             | 40 ----------------------
- .../phone/msim/MSimMobileNetworkSubSettings.java   | 27 +++++----------
- 2 files changed, 8 insertions(+), 59 deletions(-)
+ res/values/strings.xml                             | 10 ++++++++
+ res/xml/msim_network_sub_setting.xml               |  4 ++--
+ .../phone/msim/MSimMobileNetworkSubSettings.java   | 27 +++++++---------------
+ 3 files changed, 20 insertions(+), 21 deletions(-)
 
 diff --git a/res/values/strings.xml b/res/values/strings.xml
-index 40a0aca..bc4893c 100644
+index 40a0aca..27667c4 100644
 --- a/res/values/strings.xml
 +++ b/res/values/strings.xml
-@@ -553,51 +553,11 @@
+@@ -551,6 +551,16 @@
+     <string name="preferred_network_mode_gsm_only_choice">GSM only</string>
+     <string name="preferred_network_mode_gsm_wcdma_preferred_choice">GSM/WCDMA preferred</string>
  
++    <string-array name="preferred_network_mode_choices_2" translatable="false">
++        <item>@string/preferred_network_mode_wcdma_only_choice</item>
++        <item>@string/preferred_network_mode_gsm_only_choice</item>
++        <item>@string/preferred_network_mode_gsm_wcdma_preferred_choice</item>
++    </string-array>
++    <string-array name="preferred_network_mode_values_2"  translatable="false">
++        <item>"2"</item>
++        <item>"1"</item>
++        <item>"0"</item>
++    </string-array>
  
      <string-array name="preferred_network_mode_choices" translatable="false">
--        <item>@string/preferred_network_mode_td_scdma_lte_gsm_wcdma_cdma_evdo_choice </item>
--        <item>@string/preferred_network_mode_td_scdma_gsm_wcdma_cdma_evdo_choice</item>
--        <item>@string/preferred_network_mode_td_scdma_gsm_wcdma_lte_choice</item>
--        <item>@string/preferred_network_mode_td_scdma_wcdma_lte_choice</item>
--        <item>@string/preferred_network_mode_td_scdma_gsm_wcdma_choice</item>
--        <item>@string/preferred_network_mode_td_scdma_gsm_lte_choice</item>
--        <item>@string/preferred_network_mode_td_scdma_gsm_choice</item>
--        <item>@string/preferred_network_mode_td_scdma_lte_choice</item>
--        <item>@string/preferred_network_mode_td_scdma_wcdma_choice</item>
--        <item>@string/preferred_network_mode_td_scdma_only_choice</item>
--        <item>@string/preferred_network_mode_lte_wcdma_choice</item>
--        <item>@string/preferred_network_mode_lte_choice</item>
--        <item>@string/preferred_network_mode_global_choice</item>
--        <item>@string/preferred_network_mode_gsm_wcdma_lte_choice</item>
--        <item>@string/preferred_network_mode_cdma_lte_evdo_choice</item>
--        <item>@string/preferred_network_mode_cdma_evdo_gsm_wcdma_choice</item>
--        <item>@string/preferred_network_mode_evdo_only_choice</item>
--        <item>@string/preferred_network_mode_cdma_wo_evdo_choice</item>
--        <item>@string/preferred_network_mode_cdma_evdo_auto_choice</item>
--        <item>@string/preferred_network_mode_gsm_wcdma_auto_choice</item>
-         <item>@string/preferred_network_mode_wcdma_only_choice</item>
-         <item>@string/preferred_network_mode_gsm_only_choice</item>
-         <item>@string/preferred_network_mode_gsm_wcdma_preferred_choice</item>
-     </string-array>
-     <string-array name="preferred_network_mode_values"  translatable="false">
--        <item>"22"</item>
--        <item>"21"</item>
--        <item>"20"</item>
--        <item>"19"</item>
--        <item>"18"</item>
--        <item>"17"</item>
--        <item>"16"</item>
--        <item>"15"</item>
--        <item>"14"</item>
--        <item>"13"</item>
--        <item>"12"</item>
--        <item>"11"</item>
--        <item>"10"</item>
--        <item>"9"</item>
--        <item>"8"</item>
--        <item>"7"</item>
--        <item>"6"</item>
--        <item>"5"</item>
--        <item>"4"</item>
--        <item>"3"</item>
-         <item>"2"</item>
-         <item>"1"</item>
-         <item>"0"</item>
+         <item>@string/preferred_network_mode_td_scdma_lte_gsm_wcdma_cdma_evdo_choice </item>
+diff --git a/res/xml/msim_network_sub_setting.xml b/res/xml/msim_network_sub_setting.xml
+index 6cd0eb5..72101de 100644
+--- a/res/xml/msim_network_sub_setting.xml
++++ b/res/xml/msim_network_sub_setting.xml
+@@ -40,8 +40,8 @@
+         android:key="preferred_network_mode_key"
+         android:title="@string/preferred_network_mode_title"
+         android:summary="@string/preferred_network_mode_summary"
+-        android:entries="@array/preferred_network_mode_choices"
+-        android:entryValues="@array/preferred_network_mode_values"
++        android:entries="@array/preferred_network_mode_choices_2"
++        android:entryValues="@array/preferred_network_mode_values_2"
+         android:dialogTitle="@string/preferred_network_mode_dialogtitle" />
+ 
+ </PreferenceScreen>
 diff --git a/src/com/android/phone/msim/MSimMobileNetworkSubSettings.java b/src/com/android/phone/msim/MSimMobileNetworkSubSettings.java
 index 609b206..2a3bc99 100644
 --- a/src/com/android/phone/msim/MSimMobileNetworkSubSettings.java

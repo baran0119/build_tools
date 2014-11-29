@@ -8,8 +8,10 @@ patches=(
                 'frameworks/opt/telephony frameworks_opt_telephony.patch'
                 'hardware/broadcom/libbt hardware_broadcom_libbt.patch'
                 'packages/apps/Settings packages_apps_Settings.patch'
+		'packages/services/Telecomm packages_services_Telecomm.patch'
                 'packages/services/Telephony packages_services_Telephony.patch'
                 'system/core system_core.patch'
+		'vendor/cm vendor_cm.patch'
 		'external/icu external_icu.patch'
 	)
 
