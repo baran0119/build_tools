@@ -11,6 +11,7 @@ patches=(
                 'packages/services/Telephony packages_services_Telephony.patch'
                 'system/core system_core.patch'
 		'external/icu external_icu.patch'
+		'packages/providers/MediaProvider packages_providers_MediaProvider.patch'
 	)
 
 while [ "x${patches[count]}" != "x" ]
@@ -20,7 +21,13 @@ do
         folder=`echo "$curr" | awk '{print $1}'`
 
 	cd "$folder"
-	git apply "$curr_folder/$patch"
+
+	if [ "$1" = "reset" ]; then
+		git reset --hard;
+	else
+		git apply "$curr_folder/$patch"
+	fi
+
 	cd "$curr_folder"
 
 	count=$(( $count + 1 ))
