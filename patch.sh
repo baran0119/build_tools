@@ -12,6 +12,7 @@ patches=(
                 'system/core system_core.patch'
 		'external/icu external_icu.patch'
 		'packages/providers/MediaProvider packages_providers_MediaProvider.patch'
+		'vendor/cm vendor_cm.patch'
 	)
 
 while [ "x${patches[count]}" != "x" ]
