@@ -26,6 +26,7 @@ do
 
 	if [ "$1" = "reset" ]; then
 		git reset --hard;
+		git clean -fdx;
 	else
 		git apply "$curr_folder/$patch"
 	fi
