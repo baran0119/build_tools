@@ -55,7 +55,7 @@ index 38ed6b1..97b63fc 100644
          err = setMinBufferSize(kPortIndexInput, 8192);  // XXX
      }
 +// Capri's OMX fail to set a reasonable default size from width and height
-+#ifdef CAPRI_HWC
++#if defined(CAPRI_HWC) || defined(JAVA_HWC)
 +    else if (!strncmp(mComponentName.c_str(), "OMX.BRCM.vc4.decoder.", 21)) {
 +        int32_t width;
 +        int32_t height;
@@ -79,7 +79,7 @@ index c65e6a4..d1bc4ce 100644
          setMinBufferSize(kPortIndexInput, (OMX_U32)maxInputSize);
      }
 +// Capri's OMX fail to set a reasonable default size from width and height
-+#ifdef CAPRI_HWC
++#if defined(CAPRI_HWC) || defined(JAVA_HWC)
 +    else if (!strncmp(mComponentName, "OMX.BRCM.vc4.decoder.", 21)) {
 +        int32_t width;
 +        int32_t height;
@@ -115,7 +115,7 @@ index 97b63fc..9b37d73 100644
                  mNode, OMX_IndexParamPortDefinition, &def, sizeof(def)),
               (status_t)OK);
  
-+#ifdef CAPRI_HWC
++#if defined(CAPRI_HWC) || defined(JAVA_HWC)
 +    if (strncmp(mComponentName.c_str(), "OMX.BRCM.vc4.encoder.", 21) != 0)
 +        // Skip checking on vc4 encoder. It will return the incorrect
 +        // port index, but correct parameters.
@@ -146,7 +146,7 @@ index 9b37d73..c3a64ef 100644
 +++ b/media/libstagefright/ACodec.cpp
 @@ -1682,13 +1682,9 @@ status_t ACodec::configureCodec(
  // Capri's OMX fail to set a reasonable default size from width and height
- #ifdef CAPRI_HWC
+ #if defined(CAPRI_HWC) || defined(JAVA_HWC)
      else if (!strncmp(mComponentName.c_str(), "OMX.BRCM.vc4.decoder.", 21)) {
 -        int32_t width;
 -        int32_t height;
@@ -188,7 +188,7 @@ index 25a77d0..3881994 100644
      audio_hw_device_t *inHwHal = inHwDev->hwDevice();
      audio_stream_in_t *inStream = NULL;
 +
-+#ifdef CAPRI_HWC
++#if defined(CAPRI_HWC) || defined(JAVA_HWC)
 +    ALOGD("Forcing channel mask to mono on capri");
 +    halconfig.channel_mask = AUDIO_CHANNEL_IN_MONO;
 +#endif
@@ -221,7 +221,7 @@ index 3881994..036b6c9 100644
 @@ -2236,8 +2236,9 @@ sp<AudioFlinger::RecordThread> AudioFlinger::openInput_l(audio_module_handle_t m
      audio_stream_in_t *inStream = NULL;
  
- #ifdef CAPRI_HWC
+ #if defined(CAPRI_HWC) || defined(JAVA_HWC)
 -    ALOGD("Forcing channel mask to mono on capri");
 +    ALOGD("Forcing input to mono 48K on capri");
      halconfig.channel_mask = AUDIO_CHANNEL_IN_MONO;
