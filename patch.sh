@@ -9,7 +9,7 @@ patches=(
                 'frameworks/opt/net/wifi frameworks_opt_net_wifi.patch'
                 'frameworks/opt/telephony frameworks_opt_telephony.patch'
                 'hardware/broadcom/libbt hardware_broadcom_libbt.patch'
-		'packages/apps/Mms packages_apps_Mms.patch''
+		'packages/apps/Mms packages_apps_Mms.patch'
                 'packages/apps/Settings packages_apps_Settings.patch'
                 'packages/providers/MediaProvider packages_providers_MediaProvider.patch'
                 'packages/services/Telephony packages_services_Telephony.patch'
