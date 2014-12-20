@@ -133,3 +133,33 @@ index 6ec4f23..40d0c81 100644
 -- 
 1.9.3 (Apple Git-50)
 
+From a4f1c9e23968ebb3410e84b6c8151a6649bb4493 Mon Sep 17 00:00:00 2001
+From: Pawit Pornkitprasan <p.pawit@gmail.com>
+Date: Sat, 20 Dec 2014 19:09:27 +0700
+Subject: [PATCH 5/5] sf: CAPRI_HWC: fix for screen recording
+ 
+Change-Id: I6c7e59400eab86bc5ec0ffebbcc475fa0fa404d2
+---
+ libs/gui/BufferQueueProducer.cpp | 5 +++++
+ 1 file changed, 5 insertions(+)
+ 
+diff --git a/libs/gui/BufferQueueProducer.cpp b/libs/gui/BufferQueueProducer.cpp
+index f152b65..3b2fd0a 100644
+--- a/libs/gui/BufferQueueProducer.cpp
++++ b/libs/gui/BufferQueueProducer.cpp
+@@ -199,7 +199,12 @@ status_t BufferQueueProducer::waitForFreeSlotThenRelock(const char* caller,
+             const int newUndequeuedCount =
+                 maxBufferCount - (dequeuedCount + 1);
+             const int minUndequeuedCount =
++#ifdef CAPRI_HWC
++                // HACK: for some reason, we need to reduce min undequeue for screen recording
++                mCore->getMinUndequeuedBufferCountLocked(false);
++#else
+                 mCore->getMinUndequeuedBufferCountLocked(async);
++#endif
+             if (newUndequeuedCount < minUndequeuedCount) {
+                 BQ_LOGE("%s: min undequeued buffer count (%d) exceeded "
+                         "(dequeued=%d undequeued=%d)",
+-- 
+1.9.3 (Apple Git-50)
+ 

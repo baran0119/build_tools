@@ -282,3 +282,56 @@ index b4aa20d..5b7d25d 100644
 -- 
 1.9.3 (Apple Git-50)
 
+From 2dc804262ae9fcb99e1be3551dde0c06ab76734b Mon Sep 17 00:00:00 2001
+From: Pawit Pornkitprasan <p.pawit@gmail.com>
+Date: Sat, 20 Dec 2014 19:09:59 +0700
+Subject: [PATCH 8/8] stagefright: CAPRI_HWC: fix for screen recording
+ 
+Change-Id: Ib8a677eb1ecabc30efe163faa9b209f4db966437
+---
+ media/libstagefright/omx/GraphicBufferSource.cpp | 2 ++
+ media/libstagefright/omx/OMXNodeInstance.cpp     | 7 +++++++
+ 2 files changed, 9 insertions(+)
+ 
+diff --git a/media/libstagefright/omx/GraphicBufferSource.cpp b/media/libstagefright/omx/GraphicBufferSource.cpp
+index 3e70956..d600573 100644
+--- a/media/libstagefright/omx/GraphicBufferSource.cpp
++++ b/media/libstagefright/omx/GraphicBufferSource.cpp
+@@ -269,12 +269,14 @@ void GraphicBufferSource::codecBufferEmptied(OMX_BUFFERHEADERTYPE* header) {
+         } else if (type == kMetadataBufferTypeGraphicBuffer) {
+             GraphicBuffer *buffer;
+             memcpy(&buffer, data + 4, sizeof(buffer));
++#ifndef CAPRI_HWC
+             if (buffer != codecBuffer.mGraphicBuffer.get()) {
+                 // should never happen
+                 ALOGE("codecBufferEmptied: buffer is %p, expected %p",
+                         buffer, codecBuffer.mGraphicBuffer.get());
+                 CHECK(!"codecBufferEmptied: mismatched buffer");
+             }
++#endif
+         }
+     }
+ 
+diff --git a/media/libstagefright/omx/OMXNodeInstance.cpp b/media/libstagefright/omx/OMXNodeInstance.cpp
+index 8c22255..eaa20c9 100644
+--- a/media/libstagefright/omx/OMXNodeInstance.cpp
++++ b/media/libstagefright/omx/OMXNodeInstance.cpp
+@@ -733,9 +733,16 @@ status_t OMXNodeInstance::createInputSurface(
+     CHECK(oerr == OMX_ErrorNone);
+ 
+     if (def.format.video.eColorFormat != OMX_COLOR_FormatAndroidOpaque) {
++#ifdef CAPRI_HWC
++        // VC Encoder change OMX_COLOR_FormatAndroidOpaque to 0x7F000005
++        if (def.format.video.eColorFormat != 0x7F000005) {
++#endif
+         ALOGE("createInputSurface requires COLOR_FormatSurface "
+               "(AndroidOpaque) color format");
+         return INVALID_OPERATION;
++#ifdef CAPRI_HWC
++        }
++#endif
+     }
+ 
+     GraphicBufferSource* bufferSource = new GraphicBufferSource(
+-- 
+1.9.3 (Apple Git-50)
