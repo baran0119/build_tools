@@ -6,7 +6,6 @@ patches=(
                 'frameworks/base frameworks_base.patch'
                 'frameworks/base frameworks_base_led.patch'
                 'frameworks/native frameworks_native.patch'
-                'frameworks/opt/net/wifi frameworks_opt_net_wifi.patch'
                 'frameworks/opt/telephony frameworks_opt_telephony.patch'
                 'hardware/broadcom/libbt hardware_broadcom_libbt.patch'
 		'packages/apps/Mms packages_apps_Mms.patch'
