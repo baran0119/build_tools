@@ -1,85 +1,58 @@
-From 286c076301041dbf938c5716c2f13a1752e39ce6 Mon Sep 17 00:00:00 2001
-From: Pawit Pornkitprasan <p.pawit@gmail.com>
-Date: Wed, 10 Dec 2014 14:27:08 +0700
-Subject: [PATCH 1/4] Fix Quick Settings for MSim [1/2]
+From 55eb473f7712e800514d31811e31dd4db00d6ff5 Mon Sep 17 00:00:00 2001
+From: Ricardo Cerqueira <cyanogenmod@cerqueira.org>
+Date: Mon, 4 Nov 2013 02:22:43 +0000
+Subject: [PATCH 1/5] Forward port Samsung STK support (frameworks/base)
 
- - Use the data type icon of active data SIM for QS
- - Show the data usage of active data SIM for QS
- - Forward setDataEnabled AS-IS (see part [2/2])
+[pawitp: port to Lollipop]
 
-Change-Id: I1c72d9955b1d068ef276386b761f7aa2d664fdc2
+Change-Id: I08d169bc466df290fca838b09f6b0fbea2ac82a8
 ---
- .../statusbar/policy/MSimNetworkControllerImpl.java         |  2 +-
- .../systemui/statusbar/policy/MobileDataController.java     |  3 ++-
- telephony/java/android/telephony/TelephonyManager.java      | 13 ++++++++++++-
- 3 files changed, 15 insertions(+), 3 deletions(-)
+ core/res/res/values/config.xml                                  | 3 +++
+ core/res/res/values/symbols.xml                                 | 1 +
+ telephony/java/com/android/internal/telephony/RILConstants.java | 1 +
+ 3 files changed, 5 insertions(+)
 
-diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/policy/MSimNetworkControllerImpl.java b/packages/SystemUI/src/com/android/systemui/statusbar/policy/MSimNetworkControllerImpl.java
-index 8ba5e23..2bca3ec 100644
---- a/packages/SystemUI/src/com/android/systemui/statusbar/policy/MSimNetworkControllerImpl.java
-+++ b/packages/SystemUI/src/com/android/systemui/statusbar/policy/MSimNetworkControllerImpl.java
-@@ -802,7 +802,7 @@ public class MSimNetworkControllerImpl extends NetworkControllerImpl {
-                 mMSimContentDescriptionDataType[phoneId] =
-                         TelephonyIcons.getDataTypeDesc();
-                 mQSDataTypeIconId =
--                        TelephonyIcons.getQSDataTypeIcon();
-+                        TelephonyIcons.getQSDataTypeIcon(dataSub);
-             }
-         }
+diff --git a/core/res/res/values/config.xml b/core/res/res/values/config.xml
+index 6c19d60..8b67909 100644
+--- a/core/res/res/values/config.xml
++++ b/core/res/res/values/config.xml
+@@ -2076,4 +2076,7 @@
+     <!-- The list of components which should be automatically disabled. -->
+     <string-array name="config_disabledComponents" translatable="false">
+     </string-array>
++
++    <!-- Boolean to enable stk functionality on Samsung phones -->
++    <bool name="config_samsung_stk">false</bool>
+ </resources>
+diff --git a/core/res/res/values/symbols.xml b/core/res/res/values/symbols.xml
+index 6d123c4..5ab5ed3 100755
+--- a/core/res/res/values/symbols.xml
++++ b/core/res/res/values/symbols.xml
+@@ -2214,6 +2214,7 @@
+   <!-- Config.xml entries -->
+   <java-symbol type="integer" name="config_backKillTimeout" />
+   <java-symbol type="bool" name="config_show_cmIMESwitcher"/>
++  <java-symbol type="bool" name="config_samsung_stk" />
  
-diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/policy/MobileDataController.java b/packages/SystemUI/src/com/android/systemui/statusbar/policy/MobileDataController.java
-index 33d68bf..6a61f68 100644
---- a/packages/SystemUI/src/com/android/systemui/statusbar/policy/MobileDataController.java
-+++ b/packages/SystemUI/src/com/android/systemui/statusbar/policy/MobileDataController.java
-@@ -33,6 +33,7 @@ import android.net.NetworkStatsHistory;
- import android.net.NetworkTemplate;
- import android.os.RemoteException;
- import android.os.ServiceManager;
-+import android.telephony.SubscriptionManager;
- import android.telephony.TelephonyManager;
- import android.text.format.DateUtils;
- import android.text.format.Time;
-@@ -207,7 +208,7 @@ public class MobileDataController {
- 
-     private static String getActiveSubscriberId(Context context) {
-         final TelephonyManager tele = TelephonyManager.from(context);
--        final String actualSubscriberId = tele.getSubscriberId();
-+        final String actualSubscriberId = tele.getSubscriberId(SubscriptionManager.getDefaultDataSubId());
-         return actualSubscriberId;
-     }
- 
-diff --git a/telephony/java/android/telephony/TelephonyManager.java b/telephony/java/android/telephony/TelephonyManager.java
-index 12b65f1..6755b25 100644
---- a/telephony/java/android/telephony/TelephonyManager.java
-+++ b/telephony/java/android/telephony/TelephonyManager.java
-@@ -3453,7 +3453,18 @@ public class TelephonyManager {
-     /** @hide */
-     @SystemApi
-     public void setDataEnabled(boolean enable) {
--        setDataEnabledUsingSubId(getDefaultSubscription(), enable);
-+        try {
-+            AppOpsManager appOps = (AppOpsManager)mContext.getSystemService(Context.APP_OPS_SERVICE);
-+            if (enable) {
-+                if (appOps.noteOp(AppOpsManager.OP_DATA_CONNECT_CHANGE) != AppOpsManager.MODE_ALLOWED) {
-+                    Log.w(TAG, "Permission denied by user.");
-+                    return;
-+                }
-+            }
-+            getITelephony().setDataEnabled(enable);
-+        } catch (RemoteException e) {
-+            Log.e(TAG, "Error calling setDataEnabled", e);
-+        }
-     }
- 
-     /** @hide */
+   <!-- Notification and battery light -->
+   <java-symbol type="bool" name="config_intrusiveNotificationLed" />
+diff --git a/telephony/java/com/android/internal/telephony/RILConstants.java b/telephony/java/com/android/internal/telephony/RILConstants.java
+index 83a67ee..4c85583 100644
+--- a/telephony/java/com/android/internal/telephony/RILConstants.java
++++ b/telephony/java/com/android/internal/telephony/RILConstants.java
+@@ -363,4 +363,5 @@ cat include/telephony/ril.h | \
+     int RIL_UNSOL_HARDWARE_CONFIG_CHANGED = 1040;
+     int RIL_UNSOL_ON_SS = 1042;
+     int RIL_UNSOL_STK_CC_ALPHA_NOTIFY = 1043;
++    int RIL_UNSOL_STK_SEND_SMS_RESULT = 11002; /* Samsung STK */
+ }
 -- 
 1.9.3 (Apple Git-50)
 
-
-From ffb347860643971bb5f70f77c3f2bb1a3dbc7b1b Mon Sep 17 00:00:00 2001
+From 9e73a467aa181164a32cc7c3447492d3bd3f5a01 Mon Sep 17 00:00:00 2001
 From: Pawit Pornkitprasan <p.pawit@gmail.com>
 Date: Sat, 15 Nov 2014 14:47:35 +0700
-Subject: [PATCH 2/4] frameworks: base: add KEYCODE_HOME to wake keys
+Subject: [PATCH 3/5] frameworks: base: add KEYCODE_HOME to wake keys
 
 Change-Id: I77d70df2263dd9c75b02efde18d91585b1ad29f9
 ---
@@ -102,129 +75,10 @@ index 788d23f..e2078d0 100644
 1.9.3 (Apple Git-50)
 
 
-From ef7e45cd491ba10d8762b08f2d24a10a55fa1aa2 Mon Sep 17 00:00:00 2001
-From: Pawit Pornkitprasan <p.pawit@gmail.com>
-Date: Sat, 15 Nov 2014 14:50:29 +0700
-Subject: [PATCH 3/4] TelephonyManager: set properties in Broadcom-style as
- expected by RIL
-
-For i9082
-
-Change-Id: I475fdd164b3316720387fefb14a3e12fbc262b39
----
- .../java/android/telephony/TelephonyManager.java   | 69 +++++++---------------
- 1 file changed, 20 insertions(+), 49 deletions(-)
-
-diff --git a/telephony/java/android/telephony/TelephonyManager.java b/telephony/java/android/telephony/TelephonyManager.java
-index 6755b25..f3d81e0 100644
---- a/telephony/java/android/telephony/TelephonyManager.java
-+++ b/telephony/java/android/telephony/TelephonyManager.java
-@@ -2729,44 +2729,16 @@ public class TelephonyManager {
-      * @hide
-      */
-     public static void setTelephonyProperty(String property, long subId, String value) {
--        String propVal = "";
--        String p[] = null;
--        String prop = SystemProperties.get(property);
-         int phoneId = SubscriptionManager.getPhoneId(subId);
- 
--        if (value == null) {
--            value = "";
--        }
--
--        if (prop != null) {
--            p = prop.split(",");
--        }
--
--        if (phoneId < 0) return;
--
--        for (int i = 0; i < phoneId; i++) {
--            String str = "";
--            if ((p != null) && (i < p.length)) {
--                str = p[i];
--            }
--            propVal = propVal + str + ",";
--        }
--
--        propVal = propVal + value;
--        if (p != null) {
--            for (int i = phoneId + 1; i < p.length; i++) {
--                propVal = propVal + "," + p[i];
--            }
--        }
--
--        // TODO: workaround for QC
--        if (property.length() > SystemProperties.PROP_NAME_MAX || propVal.length() > SystemProperties.PROP_VALUE_MAX) {
--            Rlog.d(TAG, "setTelephonyProperty length too long:" + property + ", " + propVal);
-+        if (phoneId < 0) {
-             return;
-+        } else if (phoneId > 0) {
-+            property += "_" + phoneId;
-         }
- 
--        Rlog.d(TAG, "setTelephonyProperty property=" + property + " propVal=" + propVal);
--        SystemProperties.set(property, propVal);
-+        Rlog.d(TAG, "setTelephonyProperty property=" + property + " propVal=" + value);
-+        SystemProperties.set(property, value);
-     }
- 
-     /**
-@@ -2857,16 +2829,16 @@ public class TelephonyManager {
-      * @hide
-      */
-     public static String getTelephonyProperty(String property, long subId, String defaultVal) {
--        String propVal = null;
-         int phoneId = SubscriptionManager.getPhoneId(subId);
--        String prop = SystemProperties.get(property);
--        if ((prop != null) && (prop.length() > 0)) {
--            String values[] = prop.split(",");
--            if ((phoneId >= 0) && (phoneId < values.length) && (values[phoneId] != null)) {
--                propVal = values[phoneId];
--            }
-+
-+        if (phoneId < 0) {
-+            return defaultVal;
-+        } else if (phoneId > 0) {
-+            property += "_" + phoneId;
-         }
--        return propVal == null ? defaultVal : propVal;
-+
-+        String propVal = SystemProperties.get(property);
-+        return propVal.isEmpty() ? defaultVal : propVal;
-     }
- 
-     /**
-@@ -2875,15 +2847,14 @@ public class TelephonyManager {
-      * @hide
-      */
-     public static int getTelephonyProperty(String property, int slotId, int defaultVal) {
--        String propVal = null;
--        String prop = SystemProperties.get(property);
--        if ((prop != null) && (prop.length() > 0)) {
--            String values[] = prop.split(",");
--            if ((slotId >= 0) && (slotId < values.length) && (values[slotId] != null)) {
--                propVal = values[slotId];
--            }
-+        if (slotId < 0) {
-+            return defaultVal;
-+        } else if (slotId > 0) {
-+            property += "_" + slotId;
-         }
--        return propVal == null ? defaultVal : Integer.parseInt(propVal);
-+
-+        String propVal = SystemProperties.get(property);
-+        return propVal.isEmpty() ? defaultVal : Integer.parseInt(propVal);
-     }
- 
-     /** @hide */
--- 
-1.9.3 (Apple Git-50)
-
-
-From 37ec5d6aafbfe672ef1471cb5c8b1d052f80f770 Mon Sep 17 00:00:00 2001
+From d9eaf25fd237c93e92ba49a55b6be2508ac60627 Mon Sep 17 00:00:00 2001
 From: Pawit Pornkitprasan <p.pawit@gmail.com>
 Date: Sat, 15 Nov 2014 22:33:16 +0700
-Subject: [PATCH 4/4] Camera: HACK: i9082: API hacks
+Subject: [PATCH 5/5] Camera: HACK: i9082: API hacks
 
 CTS 5.0 requires the presence of an auto mode, so applications
 may try to use auto without checking.
