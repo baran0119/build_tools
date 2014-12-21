@@ -4,7 +4,6 @@ patches=(
                 'external/icu external_icu.patch'
                 'frameworks/av frameworks_av.patch'
                 'frameworks/base frameworks_base.patch'
-                'frameworks/base frameworks_base_led.patch'
                 'frameworks/native frameworks_native.patch'
                 'frameworks/opt/telephony frameworks_opt_telephony.patch'
                 'hardware/broadcom/libbt hardware_broadcom_libbt.patch'
