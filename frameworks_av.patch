@@ -55,7 +55,7 @@ index 229e704..04f6d68 100644
          err = setMinBufferSize(kPortIndexInput, 8192);  // XXX
      }
 +// Capri's OMX fail to set a reasonable default size from width and height
-+#ifdef CAPRI_HWC
++#if defined(CAPRI_HWC) || defined(JAVA_HWC)
 +    else if (!strncmp(mComponentName.c_str(), "OMX.BRCM.vc4.decoder.", 21)) {
 +        int32_t width;
 +        int32_t height;
@@ -79,7 +79,7 @@ index b6e4d25..b4aa20d 100644
          setMinBufferSize(kPortIndexInput, (OMX_U32)maxInputSize);
      }
 +// Capri's OMX fail to set a reasonable default size from width and height
-+#ifdef CAPRI_HWC
++#if defined(CAPRI_HWC) || defined(JAVA_HWC)
 +    else if (!strncmp(mComponentName, "OMX.BRCM.vc4.decoder.", 21)) {
 +        int32_t width;
 +        int32_t height;
@@ -115,7 +115,7 @@ index 04f6d68..67558ab 100644
                  mNode, OMX_IndexParamPortDefinition, &def, sizeof(def)),
               (status_t)OK);
  
-+#ifdef CAPRI_HWC
++#if defined(CAPRI_HWC) || defined(JAVA_HWC)
 +    if (strncmp(mComponentName.c_str(), "OMX.BRCM.vc4.encoder.", 21) != 0)
 +        // Skip checking on vc4 encoder. It will return the incorrect
 +        // port index, but correct parameters.
@@ -146,7 +146,7 @@ index 67558ab..5a4f1bd 100644
 +++ b/media/libstagefright/ACodec.cpp
 @@ -1684,13 +1684,9 @@ status_t ACodec::configureCodec(
  // Capri's OMX fail to set a reasonable default size from width and height
- #ifdef CAPRI_HWC
+ #if defined(CAPRI_HWC) || defined(JAVA_HWC)
      else if (!strncmp(mComponentName.c_str(), "OMX.BRCM.vc4.decoder.", 21)) {
 -        int32_t width;
 -        int32_t height;
@@ -188,7 +188,7 @@ index 0717e57..557e65a 100644
      audio_hw_device_t *inHwHal = inHwDev->hwDevice();
      audio_stream_in_t *inStream = NULL;
 +
-+#ifdef CAPRI_HWC
++#if defined(CAPRI_HWC) || defined(JAVA_HWC)
 +    ALOGD("Forcing channel mask to mono on capri");
 +    halconfig.channel_mask = AUDIO_CHANNEL_IN_MONO;
 +#endif
@@ -221,7 +221,7 @@ index 557e65a..3a3c16b 100644
 @@ -2236,8 +2236,9 @@ sp<AudioFlinger::RecordThread> AudioFlinger::openInput_l(audio_module_handle_t m
      audio_stream_in_t *inStream = NULL;
  
- #ifdef CAPRI_HWC
+ #if defined(CAPRI_HWC) || defined(JAVA_HWC)
 -    ALOGD("Forcing channel mask to mono on capri");
 +    ALOGD("Forcing input to mono 48K on capri");
      halconfig.channel_mask = AUDIO_CHANNEL_IN_MONO;
@@ -255,7 +255,7 @@ index 5a4f1bd..0b03ba6 100644
      // This check was present in KitKat.
      if (def.nBufferCountActual < def.nBufferCountMin + *minUndequeuedBuffers) {
  #endif
-+#ifdef CAPRI_HWC
++#if defined(CAPRI_HWC) || defined(JAVA_HWC)
 +    for (OMX_U32 extraBuffers = 1; /* condition inside loop */; extraBuffers--) {
 +#else
      for (OMX_U32 extraBuffers = 2 + 1; /* condition inside loop */; extraBuffers--) {
@@ -271,7 +271,7 @@ index b4aa20d..5b7d25d 100644
      CODEC_LOGI("OMX-buffers: min=%u actual=%u undeq=%d+1",
              def.nBufferCountMin, def.nBufferCountActual, minUndequeuedBufs);
  
-+#ifdef CAPRI_HWC
++#if defined(CAPRI_HWC) || defined(JAVA_HWC)
 +    for (OMX_U32 extraBuffers = 1; /* condition inside loop */; extraBuffers--) {
 +#else
      for (OMX_U32 extraBuffers = 2 + 1; /* condition inside loop */; extraBuffers--) {
@@ -320,14 +320,14 @@ index 8c22255..eaa20c9 100644
      CHECK(oerr == OMX_ErrorNone);
  
      if (def.format.video.eColorFormat != OMX_COLOR_FormatAndroidOpaque) {
-+#ifdef CAPRI_HWC
++#if defined(CAPRI_HWC) || defined(JAVA_HWC)
 +        // VC Encoder change OMX_COLOR_FormatAndroidOpaque to 0x7F000005
 +        if (def.format.video.eColorFormat != 0x7F000005) {
 +#endif
          ALOGE("createInputSurface requires COLOR_FormatSurface "
                "(AndroidOpaque) color format");
          return INVALID_OPERATION;
-+#ifdef CAPRI_HWC
++#if defined(CAPRI_HWC) || defined(JAVA_HWC)
 +        }
 +#endif
      }
@@ -359,7 +359,7 @@ index 0b03ba6..c9a1948 100644
  
 -static OMX_VIDEO_CONTROLRATETYPE getBitrateMode(const sp<AMessage> &msg) {
 +static OMX_VIDEO_CONTROLRATETYPE getBitrateMode(const sp<AMessage> &msg, const AString &name) {
-+#ifdef CAPRI_HWC
++#if defined(CAPRI_HWC) || defined(JAVA_HWC)
 +    // vc4 encoder only supports VBR
 +    if (strncmp(name.c_str(), "OMX.BRCM.vc4.encoder.", 21) == 0) {
 +        return OMX_Video_ControlRateVariable;

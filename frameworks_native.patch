@@ -93,7 +93,7 @@ index bbe5e90..97b03f7 100644
      ATRACE_CALL();
  
 +// Rotation artifact problems when useReadPixels is false
-+#ifdef CAPRI_HWC
++#if defined(CAPRI_HWC) || defined(JAVA_HWC)
 +    useReadPixels = true;
 +#endif
 +
@@ -151,7 +151,7 @@ index f152b65..3b2fd0a 100644
              const int newUndequeuedCount =
                  maxBufferCount - (dequeuedCount + 1);
              const int minUndequeuedCount =
-+#ifdef CAPRI_HWC
++#if defined(CAPRI_HWC) || defined(JAVA_HWC)
 +                // HACK: for some reason, we need to reduce min undequeue for screen recording
 +                mCore->getMinUndequeuedBufferCountLocked(false);
 +#else
