@@ -10,7 +10,6 @@ patches=(
 		'packages/apps/Mms packages_apps_Mms.patch'
                 'packages/apps/Settings packages_apps_Settings.patch'
                 'packages/providers/MediaProvider packages_providers_MediaProvider.patch'
-                'packages/services/Telephony packages_services_Telephony.patch'
                 'system/core system_core.patch'
 	)
 
