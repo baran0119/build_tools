@@ -301,7 +301,7 @@ index 3e70956..d600573 100644
          } else if (type == kMetadataBufferTypeGraphicBuffer) {
              GraphicBuffer *buffer;
              memcpy(&buffer, data + 4, sizeof(buffer));
-+#if !defined(CAPRI_HWC) if !defined(CAPRI_HWC) || !defined(JAVA_HWC)
++#if !defined(CAPRI_HWC) || !defined(JAVA_HWC)
              if (buffer != codecBuffer.mGraphicBuffer.get()) {
                  // should never happen
                  ALOGE("codecBufferEmptied: buffer is %p, expected %p",
