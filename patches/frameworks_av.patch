@@ -311,7 +311,37 @@ index 3e70956..d600573 100644
 +#endif
          }
      }
+
+diff --git a/media/libstagefright/omx/SoftOMXPlugin.cpp b/media/libstagefright/omx/SoftOMXPlugin.cpp
+index 069065f..32b4aef 100644
+--- a/media/libstagefright/omx/SoftOMXPlugin.cpp
++++ b/media/libstagefright/omx/SoftOMXPlugin.cpp
+@@ -81,6 +81,25 @@ static const struct {
+     { "OMX.google.raw.decoder", "rawdec", "audio_decoder.raw" },
+     { "OMX.google.flac.encoder", "flacenc", "audio_encoder.flac" },
+     { "OMX.google.gsm.decoder", "gsmdec", "audio_decoder.gsm" },
++    { "OMX.brcm.video.mpeg4.hw.decoder", "mpeg4dec", "video_decoder.mpeg4" },
++    { "OMX.brcm.video.vc1.hw.decoder", "vc1dec", "video_decoder.vc1" },
++    { "OMX.brcm.video.mpeg4.decoder", "mpeg4dec", "video_decoder.mpeg4" },
++    { "OMX.brcm.video.h263.decoder", "mpeg4dec", "video_decoder.h263" },
++    { "OMX.brcm.video.h264.hw.decoder", "h264dec", "video_decoder.h264" },
++    { "OMX.brcm.video.h264.decoder", "h264dec", "video_decoder.h264" },
++    { "OMX.SEC.amr.dec", "amrdec", "audio_decoder.amrwb" },
++    { "OMX.SEC.mp3.dec", "mp3dec", "audio_decoder.mp3" },
++    { "OMX.SEC.aac.dec", "aacdec", "audio_decoder.aac" },
++    { "OMX.SEC.wma.dec", "wmadec", "audio_decoder.wma" },
++    { "OMX.SEC.flac.dec", "flacdec", "audio_decoder.flac" },
++    { "OMX.brcm.video.h264.async.hw.encoder", "h264enc", "video_encoder.h264" },
++    { "OMX.brcm.video.h264.hw.encoder", "h264enc", "video_encoder.h264" },
++    { "OMX.brcm.video.h264.encoder", "h264enc", "video_encoder.h264" },
++    { "OMX.brcm.video.h263.encoder", "h263enc", "video_encoder.h263" },
++    { "OMX.brcm.video.mpeg4.encoder", "mpeg4enc", "video_encoder.mpeg4" },
++    { "OMX.brcm.audio.amrnb.encoder", "amrnbenc", "audio_encoder.amrnb" },
++    { "OMX.brcm.audio.amrwb.encoder", "amrwbenc", "audio_encoder.amrwb" },
++    { "OMX.brcm.audio.aac.encoder", "aacenc", "audio_encoder.aac" },
+ };
  
+ static const size_t kNumComponents =
 diff --git a/media/libstagefright/omx/OMXNodeInstance.cpp b/media/libstagefright/omx/OMXNodeInstance.cpp
 index 8c22255..eaa20c9 100644
 --- a/media/libstagefright/omx/OMXNodeInstance.cpp

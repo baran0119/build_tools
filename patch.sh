@@ -1,34 +1,19 @@
-count=0
-curr_folder="$PWD"
-patches=(
-                'external/icu external_icu.patch'
-                'frameworks/av frameworks_av.patch'
-                'frameworks/base frameworks_base.patch'
-                'frameworks/native frameworks_native.patch'
-                'frameworks/opt/telephony frameworks_opt_telephony.patch'
-                'hardware/broadcom/libbt hardware_broadcom_libbt.patch'
-		'packages/apps/Mms packages_apps_Mms.patch'
-                'packages/apps/Settings packages_apps_Settings.patch'
-                'packages/providers/MediaProvider packages_providers_MediaProvider.patch'
-                'system/core system_core.patch'
-	)
+#!/bin/bash
+CUR_DIR=`pwd`
+echo "Your cuurent dir is $CUR_DIR"
 
-while [ "x${patches[count]}" != "x" ]
-do
-	curr="${patches[count]}"
-	patch=`echo "$curr" | awk '{print $2}'`
-        folder=`echo "$curr" | awk '{print $1}'`
-
-	cd "$folder"
-
-	if [ "$1" = "reset" ]; then
-		git reset --hard;
-		git clean -fdx;
-	else
-		git apply "$curr_folder/$patch"
-	fi
-
-	cd "$curr_folder"
-
-	count=$(( $count + 1 ))
+for PATCH in $(ls patches|grep .patch); do
+	PATH2PATCH=`echo $PATCH|cut -d. -f1|sed 's:_:/:g'`
+	echo "Patching $PATH2PATCH with $PATCH"
+	cd $PATH2PATCH
+	git apply $CUR_DIR/patches/$PATCH
+	cd $CUR_DIR
 done
+for PATCH in $(ls patches/msim|grep .patch); do
+	PATH2PATCH=`echo $PATCH|cut -d. -f1|sed 's:_:/:g'`
+	echo "Patching $PATH2PATCH with $PATCH"
+	cd $PATH2PATCH
+	git apply $CUR_DIR/patches/msim/$PATCH
+	cd $CUR_DIR
+done
+echo "Patched"
