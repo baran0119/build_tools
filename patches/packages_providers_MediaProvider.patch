@@ -1,18 +1,8 @@
-From ee9f46c34257546b26ea0cdc724bcf09eb678a30 Mon Sep 17 00:00:00 2001
-From: LuK1337 <priv.luk@gmail.com>
-Date: Wed, 30 Jul 2014 16:33:07 +0200
-Subject: [PATCH] Use bigger artworks
-
-Change-Id: Ia4bfd5bb278a2a36d767a4306dc0c470234ce712
----
- src/com/android/providers/media/MediaProvider.java | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
 diff --git a/src/com/android/providers/media/MediaProvider.java b/src/com/android/providers/media/MediaProvider.java
-index 775d6c8..b5665c9 100755
+index 9d4c036..2ff5404 100755
 --- a/src/com/android/providers/media/MediaProvider.java
 +++ b/src/com/android/providers/media/MediaProvider.java
-@@ -4972,7 +4972,7 @@ public class MediaProvider extends ContentProvider {
+@@ -5031,7 +5031,7 @@ public class MediaProvider extends ContentProvider {
              // request a reasonably sized output image
              final Resources r = getContext().getResources();
              final int maximumThumbSize = r.getDimensionPixelSize(R.dimen.maximum_thumb_size);
@@ -21,6 +11,3 @@ index 775d6c8..b5665c9 100755
                  opts.outHeight /= 2;
                  opts.outWidth /= 2;
                  opts.inSampleSize *= 2;
--- 
-2.0.1
-

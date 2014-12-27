@@ -6,7 +6,7 @@ repo forall -c 'git reset --hard ; git clean -fdx'
 # Sync repositories
 repo sync -f -j16
 
-read -p "Patching now? [y]" ans
-if [ y = $ans ] ; then
+read -p "Patching now? [y] " ans
+if [ "$ans" == "y" ] ; then
 	./patch.sh
 fi

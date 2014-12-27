@@ -1,13 +1,3 @@
-From f625556ee3379a7689f8280b3a2d8c75c3ba4274 Mon Sep 17 00:00:00 2001
-From: LuK1337 <priv.luk@gmail.com>
-Date: Thu, 27 Nov 2014 17:50:17 +0100
-Subject: [PATCH] Add back some functions
-
-Change-Id: Ib1506a940c312db7b90bb88d8014796e8f7f385b
----
- icu4c/source/common/ucnv.c | 138 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 138 insertions(+)
-
 diff --git a/icu4c/source/common/ucnv.c b/icu4c/source/common/ucnv.c
 index 5cf4d15..53637c1 100644
 --- a/icu4c/source/common/ucnv.c
@@ -157,6 +147,3 @@ index 5cf4d15..53637c1 100644
  #endif
  
  /*
--- 
-2.1.3
-
