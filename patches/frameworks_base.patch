@@ -70,10 +70,10 @@ index 3cb2261..b320910 100644
                               mButtonsLight.setBrightness(0);
                          } else {
                              mButtonsLight.setBrightness(buttonBrightness);
-diff --git a/telephony/java/android/telephony/TelephonyManager.java b/telephony/java/android/telephony/TelephonyManager.java
+diff --git a/policy/src/com/android/internal/policy/impl/PhoneWindowManager.java b/policy/src/com/android/internal/policy/impl/PhoneWindowManager.java
 index 12b65f1..f3d81e0 100644
---- a/telephony/java/android/telephony/TelephonyManager.java
-+++ b/telephony/java/android/telephony/TelephonyManager.java
+--- a/policy/src/com/android/internal/policy/impl/PhoneWindowManager.java
++++ b/policy/src/com/android/internal/policy/impl/PhoneWindowManager.java
 @@ -1642,7 +1642,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                      Settings.Secure.RING_HOME_BUTTON_BEHAVIOR_DEFAULT,
                      UserHandle.USER_CURRENT);
