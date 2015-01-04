@@ -1,25 +1,13 @@
-diff --git a/src/com/android/settings/sim/SimSettings.java b/src/com/android/settings/sim/SimSettings.java
-index 90957c8..3990c4c 100644
---- a/src/com/android/settings/sim/SimSettings.java
-+++ b/src/com/android/settings/sim/SimSettings.java
-@@ -165,19 +165,13 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
-         for (int i = 0; i < mNumSlots; ++i) {
-             final SubInfoRecord sir = findRecordBySlotId(i);
-             simCards.addPreference(new SimPreference(getActivity(), sir, i));
--            if (mNumSlots > 1) {
--                mSimEnablers.add(i, new MultiSimEnablerPreference(
--                        getActivity(), sir, mHandler, i));
--                simEnablers.addPreference(mSimEnablers.get(i));
--            } else {
--                removePreference(SIM_ENABLER_CATEGORY);
--            }
-             // Do not display deactivated subInfo in preference list
-             if ((sir != null) && (sir.mStatus == SubscriptionManager.ACTIVE)) {
-                 mNumSims++;
-                 mAvailableSubInfos.add(sir);
-             }
-         }
-+        removePreference(SIM_ENABLER_CATEGORY);
-     }
+diff --git a/res/xml/button_settings.xml b/res/xml/button_settings.xml
+index ae56748..284cd93 100644
+--- a/res/xml/button_settings.xml
++++ b/res/xml/button_settings.xml
+@@ -60,7 +60,7 @@
+         <com.android.settings.cyanogenmod.SystemSettingSwitchPreference
+             android:key="home_wake_screen"
+             android:title="@string/button_wake_title"
+-            android:defaultValue="false" />
++            android:defaultValue="true" />
  
-     private void updateAllOptions() {
+         <SwitchPreference
+             android:key="home_answer_call"
